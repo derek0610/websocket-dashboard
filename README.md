@@ -2,6 +2,10 @@
 
 即時加密貨幣交易視圖應用程序，顯示K線圖和訂單簿深度資訊。
 
+## Demo
+
+[Live Demo](https://websocket-dashboard-tau.vercel.app/)
+
 ## 功能特點
 
 - 即時K線圖顯示
