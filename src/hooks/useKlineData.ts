@@ -1,7 +1,26 @@
 import { useState, useEffect } from 'react';
-import { KlineData } from '@/types/kline';
+import { KlineData, Candlestick } from '@/types/kline';
 
 const CRYPTO_WS_URL = 'wss://stream.crypto.com/exchange/v1/market';
+
+interface WebSocketMessage {
+  id: number;
+  method: string;
+  code?: number;
+  result?: {
+    instrument_name: string;
+    data: Array<CandlestickData>;
+  };
+}
+
+interface CandlestickData {
+  t: number;    // timestamp
+  o: string;    // open price
+  h: string;    // high price
+  l: string;    // low price
+  c: string;    // close price
+  v: string;    // volume
+}
 
 export const TRADING_PAIRS = [
   'BTCUSD-PERP',
@@ -54,7 +73,7 @@ export function useKlineData() {
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      const data: WebSocketMessage = JSON.parse(event.data);
 
       if (data.method === 'public/heartbeat') {
         ws.send(JSON.stringify({
@@ -71,8 +90,8 @@ export function useKlineData() {
         setKlineDataMap(prev => {
           const newCandlesticks = [...(prev[pair]?.candlesticks || [])];
           
-          data.result.data.forEach((candlestick: any) => {
-            const newCandlestick = {
+          data.result.data.forEach((candlestick: CandlestickData) => {
+            const newCandlestick: Candlestick = {
               time: Math.floor(candlestick.t / 1000),
               open: parseFloat(candlestick.o),
               high: parseFloat(candlestick.h),
@@ -105,7 +124,7 @@ export function useKlineData() {
       }
     };
 
-    ws.onerror = (error) => {
+    ws.onerror = (error: Event) => {
       console.error('WebSocket error:', error);
     };
 
