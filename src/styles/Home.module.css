@@ -1,0 +1,82 @@
+.page {
+  --gray-rgb: 0, 0, 0;
+  --gray-alpha-200: rgba(var(--gray-rgb), 0.08);
+  --gray-alpha-100: rgba(var(--gray-rgb), 0.05);
+
+  min-height: 100vh;
+  padding: 1rem;
+  font-family: var(--font-geist-sans);
+  background: linear-gradient(
+    135deg,
+    #1a1a2e 0%,
+    #16213e 50%,
+    #1a1a2e 100%
+  );
+  color: #fff;
+  position: relative;
+}
+
+/* 添加背景光暈效果 */
+.page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(62, 84, 172, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(114, 67, 186, 0.15) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.main {
+  position: relative; /* 確保內容在背景效果之上 */
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.main h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* 確保每個卡片佔據至少三分之一的空間 */
+.grid > * {
+  flex: 1 1 calc(33.333% - 1rem);
+  max-width: calc(33.333% - 1rem);
+}
+
+@media (max-width: 1200px) {
+  .grid > * {
+    flex: 1 1 calc(50% - 1rem);
+    max-width: calc(50% - 1rem);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 0.5rem;
+  }
+  
+  .main {
+    padding: 0.5rem;
+  }
+  
+  .grid {
+    gap: 0.5rem;
+  }
+
+  .grid > * {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
