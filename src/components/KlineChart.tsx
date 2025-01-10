@@ -103,7 +103,9 @@ export function KlineChart({ data }: Props) {
   useEffect(() => {
     if (chartRef.current && data.candlesticks.length > 0) {
       // 確保數據是升序排列的
-      const sortedData = [...data.candlesticks].sort((a, b) => a.time - b.time);
+      const sortedData = [...data.candlesticks].sort((a, b) => 
+        (a.time as number) - (b.time as number)
+      );
       // 移除重複的時間戳
       const uniqueData = sortedData.filter((item, index, self) =>
         index === self.findIndex(t => t.time === item.time)

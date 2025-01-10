@@ -52,14 +52,16 @@ export function useCryptoOrderBook() {
         
         setOrderBooks(prev => {
           const currentBook = prev[pair] || { pair, asks: [], bids: [] };
-          const newAsks = data.result.data[0].asks?.map(([price, size]) => ({
-            price: parseFloat(price),
-            size: parseFloat(size)
-          })) || [];
-          const newBids = data.result.data[0].bids?.map(([price, size]) => ({
-            price: parseFloat(price),
-            size: parseFloat(size)
-          })) || [];
+          const [orderBookData] = data.result?.data || [{ asks: [], bids: [] }];
+          
+          const processOrders = (orders: Array<[string, string]>) => 
+            orders.map(([price, size]) => ({
+              price: parseFloat(price),
+              size: parseFloat(size)
+            }));
+
+          const newAsks = processOrders(orderBookData.asks);
+          const newBids = processOrders(orderBookData.bids);
 
           // 賣單（asks）按價格從低到高排序，取前5個
           const sortedAsks = [...(currentBook.asks || []), ...newAsks]

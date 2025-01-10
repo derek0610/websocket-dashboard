@@ -1,5 +1,7 @@
+import { Time } from 'lightweight-charts';
+
 export interface Candlestick {
-  time: number;
+  time: Time;
   open: number;
   high: number;
   low: number;

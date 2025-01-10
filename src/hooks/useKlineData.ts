@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Time } from 'lightweight-charts';
 import { KlineData, Candlestick } from '@/types/kline';
 
 const CRYPTO_WS_URL = 'wss://stream.crypto.com/exchange/v1/market';
@@ -90,9 +91,9 @@ export function useKlineData() {
         setKlineDataMap(prev => {
           const newCandlesticks = [...(prev[pair]?.candlesticks || [])];
           
-          data.result.data.forEach((candlestick: CandlestickData) => {
+          data.result?.data.forEach((candlestick: CandlestickData) => {
             const newCandlestick: Candlestick = {
-              time: Math.floor(candlestick.t / 1000),
+              time: Math.floor(candlestick.t / 1000) as Time,
               open: parseFloat(candlestick.o),
               high: parseFloat(candlestick.h),
               low: parseFloat(candlestick.l),
@@ -116,7 +117,7 @@ export function useKlineData() {
             [pair]: {
               pair,
               candlesticks: newCandlesticks
-                .sort((a, b) => a.time - b.time)
+                .sort((a, b) => (a.time as number) - (b.time as number))
                 .slice(-1440)
             }
           };
