@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Head from "next/head";
 import { Geist, Geist_Mono } from "next/font/google";
 import styles from "@/styles/Home.module.css";
@@ -18,8 +19,9 @@ const geistMono = Geist_Mono({
 
 export default function Home() {
   const orderBooks = useCryptoOrderBook();
-  const klineData = useKlineData();
-  console.log('klineData',klineData)
+  const klineDataMap = useKlineData();
+  const [selectedPair, setSelectedPair] = useState('BTCUSD-PERP');
+
   return (
     <>
       <Head>
@@ -31,10 +33,17 @@ export default function Home() {
       <div className={`${styles.page} ${geistSans.variable} ${geistMono.variable}`}>
         <main className={styles.main}>
           <h1>Crypto.com Trading View</h1>
-          <KlineChart data={klineData} />
+          {klineDataMap[selectedPair] && (
+            <KlineChart data={klineDataMap[selectedPair]} />
+          )}
           <div className={styles.grid}>
             {Object.values(orderBooks).map((orderBook) => (
-              <OrderBookCard key={orderBook.pair} orderBook={orderBook} />
+              <OrderBookCard
+                key={orderBook.pair}
+                orderBook={orderBook}
+                onSelect={setSelectedPair}
+                isSelected={orderBook.pair === selectedPair}
+              />
             ))}
           </div>
         </main>

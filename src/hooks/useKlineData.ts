@@ -2,9 +2,16 @@ import { useState, useEffect } from 'react';
 import { KlineData, Candlestick } from '@/types/kline';
 
 const CRYPTO_WS_URL = 'wss://stream.crypto.com/exchange/v1/market';
-const TRADING_PAIR = 'BTCUSD-PERP';
 
-// 計算過去24小時的開始時間（以毫秒為單位）
+export const TRADING_PAIRS = [
+  'BTCUSD-PERP',
+  'ETHUSD-PERP',
+  'SOL_USDT',
+  'XRP_USDT',
+  'ADA_USDT',
+  'DOGE_USDT'
+];
+
 const getStartTime = () => {
   const now = new Date();
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -12,47 +19,43 @@ const getStartTime = () => {
 };
 
 export function useKlineData() {
-  const [klineData, setKlineData] = useState<KlineData>({
-    pair: TRADING_PAIR,
-    candlesticks: []
-  });
+  const [klineDataMap, setKlineDataMap] = useState<Record<string, KlineData>>(
+    Object.fromEntries(TRADING_PAIRS.map(pair => [pair, { pair, candlesticks: [] }]))
+  );
 
   useEffect(() => {
     const ws = new WebSocket(CRYPTO_WS_URL);
 
     ws.onopen = () => {
-      // 訂閱即時K線數據
-      const subscribeMsg = {
-        id: Date.now(),
-        method: "subscribe",
-        params: {
-          channels: [`candlestick.1m.${TRADING_PAIR}`]
-        }
-      };
+      // 訂閱所有交易對的即時K線數據
+      TRADING_PAIRS.forEach(pair => {
+        const subscribeMsg = {
+          id: Date.now() + TRADING_PAIRS.indexOf(pair),
+          method: "subscribe",
+          params: {
+            channels: [`candlestick.1m.${pair}`]
+          }
+        };
 
-      // 請求歷史K線數據
-      const historyMsg = {
-        id: Date.now() + 1,
-        method: "public/get-candlestick",
-        params: {
-          instrument_name: TRADING_PAIR,
-          timeframe: "1m",
-          start_ts: getStartTime(),
-          count: 1440  // 24小時 * 60分鐘
-        }
-      };
+        const historyMsg = {
+          id: Date.now() + TRADING_PAIRS.length + TRADING_PAIRS.indexOf(pair),
+          method: "public/get-candlestick",
+          params: {
+            instrument_name: pair,
+            timeframe: "1m",
+            start_ts: getStartTime(),
+            count: 1440
+          }
+        };
 
-      console.log('Subscribing to kline:', subscribeMsg);
-      console.log('Requesting history:', historyMsg);
-      
-      ws.send(JSON.stringify(historyMsg));  // 先請求歷史數據
-      ws.send(JSON.stringify(subscribeMsg)); // 再訂閱即時數據
+        ws.send(JSON.stringify(historyMsg));
+        ws.send(JSON.stringify(subscribeMsg));
+      });
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
-      // 處理 heartbeat
       if (data.method === 'public/heartbeat') {
         ws.send(JSON.stringify({
           id: data.id,
@@ -61,12 +64,13 @@ export function useKlineData() {
         return;
       }
 
-      // 處理K線數據（包括歷史數據和即時數據）
       if (data.result?.data) {
-        setKlineData(prev => {
-          const newCandlesticks = [...prev.candlesticks];
+        const pair = data.result.instrument_name;
+        if (!pair || !TRADING_PAIRS.includes(pair)) return;
+
+        setKlineDataMap(prev => {
+          const newCandlesticks = [...(prev[pair]?.candlesticks || [])];
           
-          // 處理所有收到的K線數據
           data.result.data.forEach((candlestick: any) => {
             const newCandlestick = {
               time: Math.floor(candlestick.t / 1000),
@@ -77,7 +81,6 @@ export function useKlineData() {
               volume: parseFloat(candlestick.v)
             };
 
-            // 檢查是否已存在相同時間戳的K線
             const existingIndex = newCandlesticks.findIndex(
               c => c.time === newCandlestick.time
             );
@@ -89,12 +92,14 @@ export function useKlineData() {
             }
           });
 
-          // 按時間排序並限制數量
           return {
             ...prev,
-            candlesticks: newCandlesticks
-              .sort((a, b) => a.time - b.time)
-              .slice(-1440) // 保留24小時的數據
+            [pair]: {
+              pair,
+              candlesticks: newCandlesticks
+                .sort((a, b) => a.time - b.time)
+                .slice(-1440)
+            }
           };
         });
       }
@@ -109,5 +114,5 @@ export function useKlineData() {
     };
   }, []);
 
-  return klineData;
+  return klineDataMap;
 } 

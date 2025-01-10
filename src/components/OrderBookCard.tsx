@@ -3,6 +3,8 @@ import { OrderBook } from '@/types/orderbook';
 
 interface Props {
   orderBook: OrderBook;
+  onSelect: (pair: string) => void;
+  isSelected: boolean;
 }
 
 // 輔助函數：格式化數字，保留所有小數位
@@ -11,9 +13,12 @@ function formatNumber(num: number): string {
   return num.toString().replace(/\.?0+$/, '');
 }
 
-export function OrderBookCard({ orderBook }: Props) {
+export function OrderBookCard({ orderBook, onSelect, isSelected }: Props) {
   return (
-    <div className={styles.card}>
+    <div 
+      className={`${styles.card} ${isSelected ? styles.selected : ''} ${styles.clickable}`}
+      onClick={() => onSelect(orderBook.pair)}
+    >
       <h3>{orderBook.pair}</h3>
       <div className={styles.orderBook}>
         <div className={styles.levels}>
