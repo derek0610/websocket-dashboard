@@ -1,5 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { createChart, ColorType, UTCTimestamp } from 'lightweight-charts';
+import { 
+  createChart, 
+  ColorType, 
+  UTCTimestamp,
+  IChartApi,
+  ISeriesApi,
+} from 'lightweight-charts';
 import styles from '@/styles/KlineChart.module.css';
 import { KlineData } from '@/types/kline';
 
@@ -7,9 +13,14 @@ interface Props {
   data: KlineData;
 }
 
+interface ChartRef {
+  chart: IChartApi;
+  candlestickSeries: ISeriesApi<'Candlestick'>;
+}
+
 export function KlineChart({ data }: Props) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<any>(null);
+  const chartRef = useRef<ChartRef | null>(null);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;

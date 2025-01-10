@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { KlineData, Candlestick } from '@/types/kline';
+import { KlineData } from '@/types/kline';
 
 const CRYPTO_WS_URL = 'wss://stream.crypto.com/exchange/v1/market';
 
